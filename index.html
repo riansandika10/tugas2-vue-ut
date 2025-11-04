@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Bahan Ajar</title>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(135deg, #0a0a0a, #1a1a1f);
+      color: #e0e0e0;
+      font-family: "Poppins", sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* === HEADER === */
+    .index-header {
+      width: 100%;
+      padding: 25px 60px;
+      background: rgba(20, 20, 30, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(8px);
+    }
+    .index-header h1 {
+      font-size: 1.8rem;
+      color: #00bcd4;
+      letter-spacing: 1px;
+    }
+    .index-header span {
+      color: #aaa;
+      font-size: 1rem;
+    }
+
+    /* === MAIN CONTENT === */
+    .index-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 60px;
+      padding: 40px 20px 60px;
+    }
+
+    /* === WELCOME CARD === */
+    .index-welcome {
+      background: rgba(30, 30, 40, 0.7);
+      border: 1px solid rgba(0, 188, 212, 0.2);
+      border-radius: 16px;
+      padding: 50px 70px;
+      max-width: 800px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(8px);
+      transition: all 0.3s ease;
+    }
+    .index-welcome:hover {
+      box-shadow: 0 8px 30px rgba(0, 188, 212, 0.25);
+    }
+    .index-welcome h2 {
+      font-size: 2.4rem;
+      color: #00bcd4;
+      margin-bottom: 20px;
+    }
+    .index-welcome p {
+      font-size: 1.1rem;
+      color: #ccc;
+      line-height: 1.7;
+    }
+
+    /* === CARD MENU === */
+    .index-card-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 50px;
+    }
+
+    .index-card {
+      width: 320px;
+      background: #1f1f25;
+      border-radius: 20px;
+      padding: 40px 30px;
+      text-align: center;
+      transition: all 0.3s ease;
+      box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
+      text-decoration: none;
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .index-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(0,188,212,0.15), transparent);
+      transition: all 0.6s;
+    }
+
+    .index-card:hover::before {
+      left: 100%;
+    }
+
+    .index-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 10px 30px rgba(0, 188, 212, 0.3);
+      background: #24242d;
+    }
+
+    .index-card h3 {
+      font-size: 1.5rem;
+      margin-bottom: 12px;
+      color: #00bcd4;
+    }
+    .index-card p {
+      font-size: 1rem;
+      color: #bbb;
+      line-height: 1.5;
+    }
+
+    /* === FOOTER === */
+    footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 0.9rem;
+      color: #777;
+      border-top: 1px solid #222;
+      background-color: #111;
+      letter-spacing: 0.5px;
+    }
+  </style>
+</head>
+<body>
+  <header class="index-header">
+    <h1>📦 Rian Sandika Nugraha – Bahan Ajar Sistem</h1>
+    <span>v1.0 Dashboard</span>
+  </header>
+
+  <main class="index-main">
+    <div class="index-welcome">
+      <h2>Selamat Datang 👋</h2>
+      <p>
+        Kelola dan lacak distribusi bahan ajar Universitas Terbuka dengan mudah dan efisien.  
+        Pilih menu di bawah ini untuk mulai mengelola stok atau melacak status pengiriman DO mahasiswa.
+      </p>
+    </div>
+
+    <div class="index-card-container">
+      <a href="stok.html" class="index-card">
+        <h3>📚 Kelola Stok</h3>
+        <p>Lihat, cari, dan kelola data bahan ajar yang tersedia di berbagai UPBJJ.</p>
+      </a>
+
+      <a href="tracking.html" class="index-card">
+        <h3>🚚 Tracking DO</h3>
+        <p>Lacak status pengiriman DO mahasiswa secara real-time dan transparan.</p>
+      </a>
+    </div>
+  </main>
+
+  <footer>© 2025 Rian Sandika Nugraha — Sistem Informasi Bahan Ajar</footer>
+</body>
+</html>

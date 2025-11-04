@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tracking DO - Bahan Ajar</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.14"></script>
+  <script src="js/trackingApp.js"></script>
+</head>
+
+<body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col items-center">
+
+  <!-- Header -->
+  <header class="w-full bg-gray-800 py-4 shadow-md">
+    <div class="container mx-auto flex justify-between items-center px-6">
+      <h1 class="text-xl font-bold tracking-wide text-white">🚚 Tracking DO Mahasiswa</h1>
+      <a href="index.html" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition">⬅ Kembali</a>
+    </div>
+  </header>
+
+  <!-- App -->
+  <main id="app" class="flex flex-col items-center w-full mt-10 px-6">
+
+    <!-- Filter dan Tombol -->
+    <div class="w-full max-w-6xl bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
+      <div class="flex flex-wrap gap-4 justify-between items-center">
+        <div>
+          <label class="block text-sm font-medium mb-1">Filter Status:</label>
+          <select v-model="filterStatus" class="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2">
+            <option value="">Semua</option>
+            <option>Diproses</option>
+            <option>Dikirim</option>
+            <option>Diterima</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Urutkan Berdasarkan:</label>
+          <select v-model="sortKey" class="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2">
+            <option value="">Default</option>
+            <option value="nama">Nama</option>
+            <option value="tanggal">Tanggal</option>
+          </select>
+        </div>
+
+        <div class="flex gap-3 items-end">
+          <button @click="resetFilter" class="bg-gray-600 hover:bg-gray-500 px-4 py-2 rounded-lg">Reset</button>
+          <button @click="tampilkanData" class="bg-blue-600 hover:bg-blue-700 px-5 py-2 rounded-lg font-semibold transition">Tampilkan Data</button>
+        </div>
+      </div>
+
+      <!-- Garis Pembatas -->
+      <div class="border-t border-gray-600 mt-6 pt-6" v-if="dataDitampilkan">
+
+        <!-- Data DO -->
+        <div v-if="filteredDO.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div v-for="doItem in filteredDO" :key="doItem.id" 
+               class="bg-gray-900 p-5 rounded-xl shadow-lg border border-gray-700 hover:border-blue-500 transition">
+            <h2 class="text-lg font-bold text-blue-400 mb-1">DO: {{ doItem.id }}</h2>
+            <p><strong>Nama:</strong> {{ doItem.nama }}</p>
+            <p><strong>UPBJJ:</strong> {{ doItem.upbjj }}</p>
+            <p><strong>Status:</strong> 
+              <span :class="{
+                'text-yellow-400': doItem.status === 'Diproses',
+                'text-blue-400': doItem.status === 'Dikirim',
+                'text-green-400': doItem.status === 'Diterima'
+              }">
+                {{ doItem.status }}
+              </span>
+            </p>
+            <p><strong>Tanggal:</strong> {{ doItem.tanggal }}</p>
+            <p class="text-sm text-gray-400 mt-2">{{ doItem.catatan }}</p>
+          </div>
+        </div>
+
+        <!-- Jika Tidak Ada Data -->
+        <div v-else class="text-center text-gray-400 py-10">
+          ❌ Data DO tidak ditemukan untuk filter yang dipilih.
+        </div>
+
+        <!-- Tombol Tambah Data -->
+        <div class="flex justify-center mt-8">
+          <button @click="showForm = !showForm" 
+            class="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-xl font-semibold transition">
+            {{ showForm ? '✖ Tutup Form' : '➕ Tambah Data DO' }}
+          </button>
+        </div>
+
+        <!-- Form Tambah Data -->
+        <div v-if="showForm" class="mt-8 bg-gray-900 p-6 rounded-xl border border-gray-700 shadow-lg">
+          <h3 class="text-xl font-semibold mb-4 text-blue-400">Tambah Data Delivery Order</h3>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium">Nama Mahasiswa</label>
+              <input v-model="form.nama" type="text" class="w-full bg-gray-700 rounded-lg px-3 py-2 mt-1 border border-gray-600">
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium">UPBJJ</label>
+              <select v-model="form.upbjj" class="w-full bg-gray-700 rounded-lg px-3 py-2 mt-1 border border-gray-600">
+                <option value="">Pilih UPBJJ</option>
+                <option v-for="u in upbjjList" :key="u">{{ u }}</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium">Status</label>
+              <select v-model="form.status" class="w-full bg-gray-700 rounded-lg px-3 py-2 mt-1 border border-gray-600">
+                <option>Diproses</option>
+                <option>Dikirim</option>
+                <option>Diterima</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium">Tanggal</label>
+              <input v-model="form.tanggal" type="date" class="w-full bg-gray-700 rounded-lg px-3 py-2 mt-1 border border-gray-600">
+            </div>
+
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium">Catatan (Opsional)</label>
+              <textarea v-model="form.catatan" class="w-full bg-gray-700 rounded-lg px-3 py-2 mt-1 border border-gray-600"></textarea>
+            </div>
+          </div>
+
+          <button @click="simpanData" 
+            class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg mt-4 font-semibold transition">
+            Simpan Data
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    new Vue({
+      el: '#app',
+      data: {
+        dataDitampilkan: false,
+        showForm: false,
+        filterStatus: '',
+        sortKey: '',
+        upbjjList: ['Surabaya', 'Jakarta', 'Medan', 'Makassar'],
+        form: { nama: '', upbjj: '', status: 'Diproses', tanggal: '', catatan: '' },
+        doList: [
+          { id: 'DO-001', nama: 'Ahmad Fauzi', upbjj: 'Surabaya', status: 'Dikirim', tanggal: '2025-11-01', catatan: 'Sedang dalam perjalanan' },
+          { id: 'DO-002', nama: 'Siti Aminah', upbjj: 'Jakarta', status: 'Diterima', tanggal: '2025-10-29', catatan: 'Sudah diterima oleh mahasiswa' },
+          { id: 'DO-003', nama: 'Budi Hartono', upbjj: 'Makassar', status: 'Diproses', tanggal: '2025-11-03', catatan: 'Menunggu konfirmasi ekspedisi' },
+        ]
+      },
+      computed: {
+        filteredDO() {
+          let hasil = this.doList;
+          if (this.filterStatus) hasil = hasil.filter(i => i.status === this.filterStatus);
+          if (this.sortKey === 'nama') hasil.sort((a, b) => a.nama.localeCompare(b.nama));
+          if (this.sortKey === 'tanggal') hasil.sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
+          return hasil;
+        }
+      },
+      methods: {
+        tampilkanData() {
+          this.dataDitampilkan = true;
+        },
+        resetFilter() {
+          this.filterStatus = '';
+          this.sortKey = '';
+          this.dataDitampilkan = false;
+        },
+        simpanData() {
+          if (!this.form.nama || !this.form.upbjj || !this.form.tanggal) {
+            alert('Harap lengkapi semua data wajib.');
+            return;
+          }
+          const newDO = {
+            id: `DO-${(this.doList.length + 1).toString().padStart(3, '0')}`,
+            ...this.form
+          };
+          this.doList.push(newDO);
+          alert('Data DO berhasil disimpan!');
+          this.form = { nama: '', upbjj: '', status: 'Diproses', tanggal: '', catatan: '' };
+          this.showForm = false;
+        }
+      }
+    });
+  </script>
+
+</body>
+</html>

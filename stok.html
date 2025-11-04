@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Stok - Bahan Ajar</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.14"></script>
+  <script src="js/dataBahanAjar.js"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col items-center">
+
+  <!-- Header -->
+  <header class="w-full bg-gray-800 py-4 shadow-md">
+    <div class="container mx-auto flex justify-between items-center px-6">
+      <h1 class="text-xl font-bold tracking-wide text-white">📚 Dashboard Stok Bahan Ajar</h1>
+      <a href="index.html" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition">⬅ Kembali</a>
+    </div>
+  </header>
+
+  <!-- App -->
+  <main id="app" class="flex flex-col items-center w-full mt-10 px-6">
+
+    <!-- Filter -->
+    <div class="w-full max-w-6xl bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
+      <div class="flex flex-wrap gap-4 justify-between items-center">
+        <div>
+          <label class="block text-sm font-medium mb-1">Filter UPBJJ:</label>
+          <select v-model="filterUpbjj" class="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2">
+            <option value="">Semua</option>
+            <option v-for="u in upbjjList" :key="u">{{ u }}</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Filter Kategori:</label>
+          <select v-model="filterKategori" class="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2">
+            <option value="">Semua</option>
+            <option v-for="k in kategoriList" :key="k">{{ k }}</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Urutkan Berdasarkan:</label>
+          <select v-model="sortKey" class="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2">
+            <option value="">Default</option>
+            <option value="judul">Judul</option>
+            <option value="stok">Jumlah Stok</option>
+            <option value="harga">Harga</option>
+          </select>
+        </div>
+
+        <div class="flex gap-3 items-end">
+          <button @click="resetFilter" class="bg-gray-600 hover:bg-gray-500 px-4 py-2 rounded-lg">Reset</button>
+          <button @click="tampilkanData" class="bg-blue-600 hover:bg-blue-700 px-5 py-2 rounded-lg font-semibold transition">Tampilkan Data</button>
+        </div>
+      </div>
+
+      <!-- Tombol Tambah Data (Posisi berubah dinamis) -->
+      <div v-if="!dataDitampilkan" class="text-center mt-8">
+        <button @click="tambahDataBaru = !tambahDataBaru" 
+                class="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-lg transition">
+          ➕ Tambah Data Bahan Ajar
+        </button>
+      </div>
+
+      <!-- Form Tambah Data -->
+      <div v-if="tambahDataBaru && !dataDitampilkan" class="mt-8 bg-gray-900 p-6 rounded-xl border border-gray-700">
+        <h3 class="text-lg font-bold text-blue-400 mb-4">Tambah Data Bahan Ajar</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <input v-model="form.kode" placeholder="Kode Mata Kuliah" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2">
+          <input v-model="form.judul" placeholder="Judul Mata Kuliah" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2">
+          <input v-model="form.kategori" placeholder="Kategori" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2">
+          <input v-model="form.upbjj" placeholder="UPBJJ" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2">
+          <input v-model="form.lokasiRak" placeholder="Lokasi Rak" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2">
+          <input v-model.number="form.harga" type="number" placeholder="Harga" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2">
+          <input v-model.number="form.qty" type="number" placeholder="Jumlah Stok" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2">
+          <input v-model.number="form.safety" type="number" placeholder="Safety Stok" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2">
+        </div>
+        <textarea v-model="form.catatan" placeholder="Catatan (opsional)" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 mt-4 w-full"></textarea>
+
+        <div class="text-right mt-4">
+          <button @click="simpanData" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg font-semibold transition">Simpan Data</button>
+        </div>
+      </div>
+
+      <!-- Data -->
+      <div class="border-t border-gray-600 mt-10 pt-6" v-if="dataDitampilkan">
+        <!-- Grid Data -->
+        <div v-if="filteredStok.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div v-for="item in filteredStok" :key="item.kode"
+               class="bg-gray-900 p-5 rounded-xl shadow-lg border border-gray-700 hover:border-blue-500 transition">
+            <h2 class="text-lg font-bold text-blue-400 mb-1">{{ item.judul }}</h2>
+            <p class="text-sm text-gray-400 mb-2">{{ item.kode }} — {{ item.kategori }}</p>
+            <p><strong>UPBJJ:</strong> {{ item.upbjj }}</p>
+            <p><strong>Lokasi Rak:</strong> {{ item.lokasiRak }}</p>
+            <p><strong>Harga:</strong> Rp{{ item.harga.toLocaleString() }}</p>
+            <p><strong>Stok:</strong> 
+              <span :class="item.qty <= item.safety ? 'text-red-400 font-semibold' : 'text-green-400 font-semibold'">
+                {{ item.qty }}
+              </span>
+              / Safety: {{ item.safety }}
+            </p>
+            <div class="mt-2 text-sm text-gray-300" v-html="item.catatanHTML"></div>
+          </div>
+        </div>
+
+        <!-- Jika Tidak Ada Data -->
+        <div v-else class="text-center text-gray-400 py-10">
+          ❌ Data tidak ditemukan untuk filter yang dipilih.
+        </div>
+
+        <!-- Tombol + Form Tambah Data di bawah data -->
+        <div class="text-center mt-10">
+          <button @click="tambahDataBaru = !tambahDataBaru" 
+                  class="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-lg transition">
+            ➕ Tambah Data Bahan Ajar
+          </button>
+        </div>
+
+        <div v-if="tambahDataBaru && dataDitampilkan" class="mt-8 bg-gray-900 p-6 rounded-xl border border-gray-700">
+          <h3 class="text-lg font-bold text-blue-400 mb-4">Tambah Data Bahan Ajar</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input v-model="form.kode" placeholder="Kode Mata Kuliah" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2">
+            <input v-model="form.judul" placeholder="Judul Mata Kuliah" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2">
+            <input v-model="form.kategori" placeholder="Kategori" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2">
+            <input v-model="form.upbjj" placeholder="UPBJJ" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2">
+            <input v-model="form.lokasiRak" placeholder="Lokasi Rak" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2">
+            <input v-model.number="form.harga" type="number" placeholder="Harga" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2">
+            <input v-model.number="form.qty" type="number" placeholder="Jumlah Stok" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2">
+            <input v-model.number="form.safety" type="number" placeholder="Safety Stok" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2">
+          </div>
+          <textarea v-model="form.catatan" placeholder="Catatan (opsional)" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 mt-4 w-full"></textarea>
+
+          <div class="text-right mt-4">
+            <button @click="simpanData" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg font-semibold transition">Simpan Data</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    new Vue({
+      el: '#app',
+      data: {
+        dataDitampilkan: false,
+        tambahDataBaru: false,
+        stok: stok,
+        upbjjList: upbjjList,
+        kategoriList: kategoriList,
+        filterUpbjj: '',
+        filterKategori: '',
+        sortKey: '',
+        form: { kode: '', judul: '', kategori: '', upbjj: '', lokasiRak: '', harga: '', qty: '', safety: '', catatan: '' }
+      },
+      computed: {
+        filteredStok() {
+          let hasil = this.stok;
+          if (this.filterUpbjj) hasil = hasil.filter(i => i.upbjj === this.filterUpbjj);
+          if (this.filterKategori) hasil = hasil.filter(i => i.kategori === this.filterKategori);
+          if (this.sortKey === 'judul') hasil.sort((a, b) => a.judul.localeCompare(b.judul));
+          if (this.sortKey === 'stok') hasil.sort((a, b) => a.qty - b.qty);
+          if (this.sortKey === 'harga') hasil.sort((a, b) => a.harga - b.harga);
+          return hasil;
+        }
+      },
+      methods: {
+        tampilkanData() {
+          this.dataDitampilkan = true;
+          this.tambahDataBaru = false;
+        },
+        resetFilter() {
+          this.filterUpbjj = '';
+          this.filterKategori = '';
+          this.sortKey = '';
+          this.dataDitampilkan = false;
+          this.tambahDataBaru = false;
+        },
+        simpanData() {
+          if (!this.form.kode || !this.form.judul || !this.form.upbjj) {
+            alert('Harap lengkapi minimal Kode, Judul, dan UPBJJ.');
+            return;
+          }
+          this.stok.push({
+            kode: this.form.kode,
+            judul: this.form.judul,
+            kategori: this.form.kategori,
+            upbjj: this.form.upbjj,
+            lokasiRak: this.form.lokasiRak,
+            harga: this.form.harga,
+            qty: this.form.qty,
+            safety: this.form.safety,
+            catatanHTML: this.form.catatan ? `<em>${this.form.catatan}</em>` : ''
+          });
+          alert('✅ Data berhasil disimpan!');
+          this.form = { kode: '', judul: '', kategori: '', upbjj: '', lokasiRak: '', harga: '', qty: '', safety: '', catatan: '' };
+          this.tambahDataBaru = false;
+        }
+      }
+    });
+  </script>
+
+</body>
+</html>
